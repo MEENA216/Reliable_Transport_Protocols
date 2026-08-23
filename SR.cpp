@@ -1,4 +1,4 @@
-/*  
+/*
  * Programming Assignment 2 - Reliable Transport Protocols
  * Protocol: Selective-Repeat (SR)
  *
@@ -168,7 +168,6 @@ static void stop_sw_timer(int seq)
     auto it = a_timers.find(seq);
     if (it == a_timers.end()) return;
 
-    bool was_earliest = true; // check if we removed the earliest
     float removed_exp = it->second;
     a_timers.erase(it);
 
@@ -238,6 +237,8 @@ void A_input(struct pkt packet)
 
 void A_timerinterrupt()
 {
+    a_hw_timer_on = false;   // hardware timer stopped on its own when it fired
+
     // Hardware timer fired: find all expired software timers and retransmit
     float now = get_sim_time();
 
