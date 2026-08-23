@@ -185,4 +185,3 @@ void B_init()
 {
     b_expected_seq = 0;
 }
-//end
