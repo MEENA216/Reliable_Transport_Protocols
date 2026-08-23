@@ -47,9 +47,6 @@ static bool a_timer_on;     // is hardware timer running?
 // We keep sent packets for retransmission and unsent ones for sending
 static std::vector<struct pkt> a_sent;   // packets in [base, nextseq)
 static std::vector<struct msg> a_buf;    // all buffered messages from layer 5
-// a_buf[i] corresponds to global sequence number (a_base_start + i)
-// We track the "global" index of a_base to index into a_buf
-static int a_buf_base;  // index in a_buf of the current window base
 
 // ─────────────────────────────────────────────
 // B-side (receiver) state
@@ -100,12 +97,8 @@ static void try_send()
 {
     // Number of packets currently in-flight
     while ((a_nextseq - a_base) < a_winsize) {
-        // Index into a_buf for the next unsent message
-        int buf_idx = a_buf_base + (a_nextseq - a_base);
-        // Check if we have a buffered message to send
-        // a_buf holds ALL messages; buf_idx is relative to initial base
-        // We use a global offset: a_nextseq itself as index into a_buf
-        // (a_buf grows monotonically; index = a_nextseq)
+        // a_buf grows monotonically and is never trimmed, so the
+        // sequence number doubles as its index
         if (a_nextseq >= (int)a_buf.size())
             break; // no more messages to send
 
@@ -184,7 +177,6 @@ void A_init()
     a_base     = 0;
     a_nextseq  = 0;
     a_timer_on = false;
-    a_buf_base = 0;
     a_buf.clear();
     a_sent.clear();
 }
